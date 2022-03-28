@@ -144,7 +144,7 @@ def decode(args):
         text = str(input())
 
     if args.cipher == "caesar":
-        new_text = caesar_encode(text, int(-args.key))
+        new_text = caesar_encode(text, -int(args.key))
     elif args.cipher == "vigenere":
         new_text = vigenere_decode(text, str(args.key))
 
@@ -163,10 +163,11 @@ def make_frequency_dict(text):
         frequency_dict[letters[i]] = 0
 
     for i in range(len(text)):
-        frequency_dict[text[i]] += 1
+        if text[i].isalpha():
+            frequency_dict[text[i].lower()] += 1
 
     for i in range(len(letters)):
-        frequency_dict[letters[i]] /= len(text)
+        frequency_dict[letters[i].lower()] /= len(text)
 
     return frequency_dict
 
