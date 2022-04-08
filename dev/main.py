@@ -42,18 +42,18 @@ def caesar_encode(text, shift):
     shift_lower = make_shift_dict(string.ascii_lowercase, shift)
     shift_upper = make_shift_dict(string.ascii_uppercase, shift)
 
-    new_text = ''
+    new_text = list(['' for i in range(len(text))])
     for i in range(len(text)):
         symbol = text[i]
         if symbol.isalpha():
             if symbol.islower():
-                new_text += shift_lower[symbol]
+                new_text[i] = shift_lower[symbol]
             else:
-                new_text += shift_upper[symbol]
+                new_text[i] = shift_upper[symbol]
 
         else:
-            new_text += symbol
-
+            new_text[i] = symbol
+    new_text = ''.join(new_text)
     return new_text
 
 
@@ -79,19 +79,20 @@ def vigenere_encode(text, code_word):
     lower_vigenere_table = make_vigenere_table(string.ascii_lowercase)
     upper_vigenere_table = make_vigenere_table(string.ascii_uppercase)
 
-    new_text = ''
+    new_text = list(['' for i in range(len(text))])
 
     for i in range(len(text)):
         symbol = text[i]
         code_symbol = code[i]
         if symbol.isalpha():
             if symbol.islower():
-                new_text += lower_vigenere_table[symbol][symbol]
+                new_text[i] = lower_vigenere_table[symbol][code_symbol]
             else:
-                new_text += upper_vigenere_table[symbol][code_symbol.upper()]
+                new_text[i] = upper_vigenere_table[symbol][code_symbol.upper()]
         else:
-            new_text += symbol
+            new_text[i] = symbol
 
+    new_text = ''.join(new_text)
     return new_text
 
 
@@ -101,19 +102,20 @@ def vigenere_decode(text, code_word):
     lower_reverse_vigenere_table = make_reverse_vigenere_table(string.ascii_lowercase)
     upper_reverse_vigenere_table = make_reverse_vigenere_table(string.ascii_uppercase)
 
-    new_text = ''
+    new_text = list(['' for i in range(len(text))])
 
     for i in range(len(text)):
         symbol = text[i]
         code_symbol = code[i]
         if symbol.isalpha():
             if symbol.islower():
-                new_text += lower_reverse_vigenere_table[code_symbol][symbol]
+                new_text[i] = lower_reverse_vigenere_table[code_symbol][symbol]
             else:
-                new_text += upper_reverse_vigenere_table[code_symbol.upper()][symbol]
+                new_text[i] = upper_reverse_vigenere_table[code_symbol.upper()][symbol]
         else:
-            new_text += symbol
+            new_text[i] = symbol
 
+    new_text = ''.join(new_text)
     return new_text
 
 
