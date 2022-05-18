@@ -119,6 +119,32 @@ def vigenere_decode(text, code_word):
     return new_text
 
 
+def xor(code, sym):
+    code_s = bin(ord(code))[2:]
+    sym_s = bin(ord(sym))[2:]
+    if len(sym_s) > len(code_s):
+        code_s = '0' * (len(sym_s) - len(code_s)) + code_s
+    else:
+        sym_s = '0' * (len(code_s) - len(sym_s)) + sym_s
+
+    s = ''
+    for i in range(len(sym_s)):
+        s += str((int(sym_s[i]) + int(code_s[i])) % 2)
+    s = '0b' + s
+    return chr(int(s, 2))
+
+
+def vernam_encode(text, code_word):
+    code = (code_word * len(text))[:len(text)]
+
+    new_text = list(['' for i in range(len(text))])
+    for i in range(len(text)):
+        new_text[i] = xor(code[i], text[i])
+
+    new_text = ''.join(new_text)
+    return new_text
+
+
 def encode(args):
     if args.input_file:
         with open(args.input_file) as file:
@@ -130,6 +156,8 @@ def encode(args):
         new_text = caesar_encode(text, int(args.key))
     elif args.cipher == "vigenere":
         new_text = vigenere_encode(text, str(args.key))
+    elif args.cipher == "vernam":
+        new_text = vernam_encode(text, str(args.key))
 
     if args.output_file:
         with open(args.output_file, 'w') as file:
@@ -149,6 +177,8 @@ def decode(args):
         new_text = caesar_encode(text, -int(args.key))
     elif args.cipher == "vigenere":
         new_text = vigenere_decode(text, str(args.key))
+    elif args.cipher == "vernam":
+        new_text = vernam_encode(text, str(args.key))
 
     if args.output_file:
         with open(args.output_file, 'w') as file:
