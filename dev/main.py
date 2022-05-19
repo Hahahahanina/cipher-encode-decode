@@ -3,7 +3,6 @@ import string
 
 
 def parse():
-
     parser = argparse.ArgumentParser()
 
     parser.add_argument("mode")
@@ -37,20 +36,37 @@ def make_reverse_shift_dict(letters, shift):
     return reverse_shift_letters
 
 
-def caesar_encode(text, shift):
+def ispunctuation(symbol):
+    return symbol in string.punctuation + ' '
 
+
+def caesar_encode(text, shift):
     shift_lower = make_shift_dict(string.ascii_lowercase, shift)
     shift_upper = make_shift_dict(string.ascii_uppercase, shift)
+
+    shift_cyrillic_lower = make_shift_dict("абвгдеёжзийклмнопрстуфхцчшщъыьэюя", shift)
+    shift_cyrillic_upper = make_shift_dict("АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ", shift)
+    shift_punctuations = make_shift_dict(string.punctuation + ' ', shift)
+    shift_digits = make_shift_dict(string.digits, shift)
 
     new_text = list(['' for i in range(len(text))])
     for i in range(len(text)):
         symbol = text[i]
         if symbol.isalpha():
             if symbol.islower():
-                new_text[i] = shift_lower[symbol]
+                if 1072 <= ord(symbol) <= 1103:
+                    new_text[i] = shift_cyrillic_lower[symbol]
+                else:
+                    new_text[i] = shift_lower[symbol]
             else:
-                new_text[i] = shift_upper[symbol]
-
+                if 1040 <= ord(symbol) <= 1071:
+                    new_text[i] = shift_cyrillic_upper[symbol]
+                else:
+                    new_text[i] = shift_upper[symbol]
+        elif symbol.isdigit():
+            new_text[i] = shift_digits[symbol]
+        elif ispunctuation(symbol):
+            new_text[i] = shift_punctuations[symbol]
         else:
             new_text[i] = symbol
     new_text = ''.join(new_text)
@@ -76,19 +92,20 @@ def make_reverse_vigenere_table(letters):
 def vigenere_encode(text, code_word):
     code = (code_word * len(text))[:len(text)]
 
-    lower_vigenere_table = make_vigenere_table(string.ascii_lowercase)
-    upper_vigenere_table = make_vigenere_table(string.ascii_uppercase)
+    vigenere_table = make_vigenere_table(
+        string.ascii_lowercase + string.ascii_uppercase
+        + "абвгдеёжзийклмнопрстуфхцчшщъыьэюя" +
+        "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ" +
+        string.punctuation + ' ' + string.digits
+    )
 
     new_text = list(['' for i in range(len(text))])
 
     for i in range(len(text)):
         symbol = text[i]
         code_symbol = code[i]
-        if symbol.isalpha():
-            if symbol.islower():
-                new_text[i] = lower_vigenere_table[symbol][code_symbol]
-            else:
-                new_text[i] = upper_vigenere_table[symbol][code_symbol.upper()]
+        if symbol.isalpha() or symbol.isdigit() or ispunctuation(symbol):
+            new_text[i] = vigenere_table[symbol][code_symbol]
         else:
             new_text[i] = symbol
 
@@ -99,19 +116,21 @@ def vigenere_encode(text, code_word):
 def vigenere_decode(text, code_word):
     code = (code_word * len(text))[:len(text)]
 
-    lower_reverse_vigenere_table = make_reverse_vigenere_table(string.ascii_lowercase)
-    upper_reverse_vigenere_table = make_reverse_vigenere_table(string.ascii_uppercase)
+    reverse_vigenere_table = make_reverse_vigenere_table(
+        string.ascii_lowercase + string.ascii_uppercase
+        + "абвгдеёжзийклмнопрстуфхцчшщъыьэюя" +
+        "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ" +
+        string.punctuation + ' ' + string.digits
+    )
 
     new_text = list(['' for i in range(len(text))])
 
     for i in range(len(text)):
         symbol = text[i]
         code_symbol = code[i]
-        if symbol.isalpha():
-            if symbol.islower():
-                new_text[i] = lower_reverse_vigenere_table[code_symbol][symbol]
-            else:
-                new_text[i] = upper_reverse_vigenere_table[code_symbol.upper()][symbol]
+
+        if symbol.isalpha() or symbol.isdigit() or ispunctuation(symbol):
+            new_text[i] = reverse_vigenere_table[code_symbol][symbol]
         else:
             new_text[i] = symbol
 
@@ -188,18 +207,20 @@ def decode(args):
 
 
 def make_frequency_dict(text):
-    letters = string.ascii_lowercase
+    letters = string.ascii_lowercase + "абвгдеёжзийклмнопрстуфхцчшщъыьэюя" + string.digits + string.punctuation + ' '
     frequency_dict = dict()
 
     for i in range(len(letters)):
         frequency_dict[letters[i]] = 0
 
     for i in range(len(text)):
-        if text[i].isalpha():
+        if text[i].isdigit() or ispunctuation(text[i]):
+            frequency_dict[text[i]] += 1
+        elif text[i].isalpha():
             frequency_dict[text[i].lower()] += 1
 
     for i in range(len(letters)):
-        frequency_dict[letters[i].lower()] /= len(text)
+        frequency_dict[letters[i]] /= len(text)
 
     return frequency_dict
 
@@ -277,7 +298,6 @@ def hack(args):
 
 
 def main():
-
     args = parse()
 
     if args.mode == "encode":
